@@ -11,7 +11,11 @@ const client = new Client()
 const database = new Databases(client);
 
 export const updateSearchCount = async (searchTerm, movie) => {
-  //use appwrite SDK to check if search term exists in database
+  if (!searchTerm || !movie) {
+    console.error("searchTerm and movie are required");
+    return;
+  }
+
   try {
     const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
       Query.equal("searchTerm", searchTerm),
@@ -34,7 +38,8 @@ export const updateSearchCount = async (searchTerm, movie) => {
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error updating search count:", error);
+    throw error; // Re-throw the error to handle it in the calling function
   }
 };
 
@@ -45,8 +50,13 @@ export const getTrendingMovies = async () => {
       Query.orderDesc("count"),
     ]);
 
+    if (!result || !result.documents) {
+      return [];
+    }
+
     return result.documents;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching trending movies:", error);
+    return []; // Return empty array instead of undefined
   }
 };
